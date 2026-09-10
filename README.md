@@ -1,117 +1,36 @@
-# macfix
+# macfix for Mac
 
-Explain macOS errors and screenshots in plain English using Groq AI.
+A native SwiftUI/AppKit menu-bar app. Requires macOS 13+ and Apple's Command
+Line Tools (Swift 5.9+) to build. No Python or third-party Swift dependencies.
 
-## Get started
-
-Requires Python 3.10+, internet access, and a [Groq API key](https://console.groq.com/keys).
-
-Open Terminal, go to the project folder, then install:
+From this folder:
 
 ```bash
-cd /path/to/macfix
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -e .
+xcode-select --install  # once; finish the installer before continuing
+bash build.sh
 ```
 
-Replace `/path/to/macfix` with the folder containing `pyproject.toml`.
+The script runs tests, builds and opens `dist/macfix.app`. You can drag this app
+to Applications. It is locally signed for development, not notarized for distribution.
 
-Create a file named `.env` in that folder and add your key:
+1. Open Settings and save your Groq key in Keychain. The CLI's `.env` is separate.
+2. Type the problem; optionally choose an image or capture a region.
+3. Review the screenshot for private information, then click **Explain**.
 
-```dotenv
-GROQ_API_KEY=your_key_here
-```
+**Control–Option–M** shows/hides the window while the app is running. Escape or
+close hides it; the menu-bar **Quit macfix** stops the app. Open the app normally
+to start it again. It does not launch at login automatically.
 
-Replace `your_key_here` with your actual key and save. The key loads automatically; you only set it once. `.env` is Git-ignored—keep it private.
+Capture may require permission in System Settings → Privacy & Security → Screen
+Recording. Restart the app after granting permission. Escape cancels selection.
 
-## Explain an error
+Only clicking Explain sends the description and attached image to Groq. Screenshots
+are prepared without metadata; captures use temporary files deleted after loading.
+Answers and attachments stay in memory until quitting. The app never executes advice.
+There is no offline fallback. Internet access and your own Groq account are required.
 
-Paste the error in quotes after `macfix`:
-
-```bash
-macfix "The disk you attached was not readable by this computer"
-```
-
-Example output (AI wording varies):
-
-```text
-Meaning
--------
-Your Mac cannot read the attached disk. The message alone does not tell us why.
-
-Severity
---------
-High
-
-Likely causes
--------------
-- A connection problem
-- An unsupported or damaged file system
-
-What to try
------------
-1. If the drive clicks or repeatedly disconnects, stop using it.
-2. Inspect whether it appears in Disk Utility without running repairs.
-3. Seek recovery advice if important files are not backed up.
-
-Avoid
------
-Do not erase, format, or attempt repairs before protecting important data.
-```
-
-## Use copied text
-
-Copy an error message with **Command+C**, then run:
-
-```bash
-macfix --clipboard
-```
-
-This sends the current clipboard **text** to Groq; it does not read copied images.
-
-## Use a screenshot
-
-For a saved screenshot, supply its path and describe what happened:
-
-```bash
-macfix --image ~/Desktop/error.png "This happens when I open the app"
-```
-
-Replace the path with your screenshot. Quote paths containing spaces:
-
-```bash
-macfix --image "$HOME/Desktop/Screenshot 1.png" "Why can't this app open?"
-```
-
-Or capture a new screenshot:
-
-```bash
-macfix --capture "My external drive isn't appearing"
-```
-
-Drag to select an area, review it in Preview, then return to Terminal and type `y` to send. Any other answer cancels. macOS may ask you to allow Screen Recording for Terminal.
-
-Use one PNG or JPEG up to 8 MB with a description. Clipboard and capture require macOS. All input methods return the same five answer sections.
-
-## Run it again later
-
-In a new Terminal window, activate the environment before using `macfix`:
-
-```bash
-cd /path/to/macfix
-source .venv/bin/activate
-macfix "Permission denied"
-```
-
-You do not need to reinstall or re-enter your saved key. Run `macfix --help` for options.
-
-Text and images are sent to Groq. Remove private information first. AI advice can be wrong; macfix never executes repairs. An internet connection and available API quota are required.
-
-## Tests
-
-```bash
-python -m unittest discover -s tests -v
-```
-
-Tests use mocked API calls and consume no Groq quota.
+Run compiler-only checks separately with `bash test.sh`, or the XCTest suite with
+`swift test` when Swift Package Manager is working. The build script uses `swiftc`
+directly and keeps its module cache in the project. Manual checks after building: key save/reopen,
+shortcut and Escape, capture approval/denial/cancellation, image preview/removal,
+text/image replies, request cancellation, and menu-bar quit.
